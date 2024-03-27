@@ -9,7 +9,9 @@ exports.getAllComplaints = (req, res) => {
   });
 };
 
-exports.getComplaint = (req, res) => {};
+exports.getComplaint = (req, res) => {
+  console.log('test');
+};
 
 exports.createComplaint = async (req, res) => {
   try {
