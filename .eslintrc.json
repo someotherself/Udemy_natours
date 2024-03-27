@@ -1,6 +1,19 @@
 {
+  "plugins": ["node", "prettier"],
+  "settings": {
+    "node": {
+      "tryExtensions": [".js", ".json", ".node"],
+      "version": ">=7.6.0"
+    }
+  },
+  "env": {
+    "es2017": true,
+    "node": true
+  },
+  "parserOptions": {
+    "ecmaVersion": 2017
+  },
   "extends": ["airbnb", "prettier", "plugin:node/recommended"],
-  "plugins": ["prettier"],
   "rules": {
     "prettier/prettier": "error",
     "spaced-comment": "off",
