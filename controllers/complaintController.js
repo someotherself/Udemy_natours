@@ -3,7 +3,13 @@ const Complaint = require('./../models/complaintModel');
 // Route handlers
 exports.getAllComplaints = async (req, res) => {
   try {
-    const allComplaints = await Complaint.find();
+    const queryObj = { ...req.query };
+    const excludeFields = ['Description', 'complaintValue', 'creditValue'];
+    excludeFields.forEach(el => {
+      delete queryObj[el];
+    });
+    const queryAllComplaints = Complaint.find(queryObj);
+    const allComplaints = await queryAllComplaints;
     res.status(200).json({
       status: 'success',
       results: allComplaints.length,
@@ -12,6 +18,7 @@ exports.getAllComplaints = async (req, res) => {
       }
     });
   } catch (err) {
+    console.log(err);
     res.status(404).json({
       status: 'Fail',
       message: 'Error'
@@ -36,14 +43,19 @@ exports.getComplaint = async (req, res) => {
 exports.createComplaint = async (req, res) => {
   try {
     const newComplaint = await Complaint.create(req.body);
-    req.status(201).json({
+    res.status(201).json({
       status: 'success',
       data: {
         complaint: newComplaint
       }
     });
   } catch (err) {
-    res.status(400).json({
+    if ((err.code = 11000)) {
+      return res
+        .status(400)
+        .json({ status: 'failed', message: 'The NCR number already exists.' });
+    }
+    res.status(500).json({
       status: 'fail',
       message: 'Invalid data sent!'
     });
@@ -54,7 +66,7 @@ exports.updateComplaint = async (req, res) => {
     const updatedComplaint = await Complaint.findByIdAndUpdate(
       req.params.id,
       req.body,
-      { new: True, runValidators: True }
+      { new: true, runValidators: true }
     );
     res.status(200).json({
       status: 'success',
@@ -63,7 +75,9 @@ exports.updateComplaint = async (req, res) => {
       }
     });
   } catch (err) {
-    console.log(err);
+    res.status(400).json({
+      status: 'failed'
+    });
   }
 };
 exports.deleteComplaint = async (req, res) => {
@@ -74,6 +88,8 @@ exports.deleteComplaint = async (req, res) => {
   });
   try {
   } catch (err) {
-    console.log(err);
+    res.status(400).json({
+      status: 'failed'
+    });
   }
 };
