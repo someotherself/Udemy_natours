@@ -4,6 +4,7 @@ const complaintController = require('./../controllers/complaintController.js');
 // Routes. Mounting the router
 const router = express.Router();
 
+router.route('/openComplaints').get(complaintController.aliasOpenComplaint, complaintController.getAllComplaints);
 router
   .route('/')
   .get(complaintController.getAllComplaints)
@@ -11,7 +12,7 @@ router
 router
   .route('/:id')
   .get(complaintController.getComplaint)
-  .patch(complaintController.updateComplaint)
-  .delete(complaintController.deleteComplaint);
+  .patch(complaintController.updateComplaint);
+// .delete(complaintController.deleteComplaint);
 
 module.exports = router;
