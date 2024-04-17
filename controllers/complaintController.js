@@ -1,5 +1,5 @@
 const Complaint = require('./../models/complaintModel');
-
+const APIFeatures = require('./../utils/apiFeatures');
 // Route handlers
 
 exports.aliasOpenComplaint = async (req, res, next) => {
@@ -7,60 +7,6 @@ exports.aliasOpenComplaint = async (req, res, next) => {
   req.query.dateClosed = { $eq: null };
   next();
 };
-
-class APIFeatures {
-  constructor(query, queryString) {
-    this.query = query;
-    this.queryString = queryString;
-  }
-
-  filter() {
-    // 1. Filtering
-    const queryObj = { ...this.queryString };
-    // All the params used for filtering, sorting, limiting need to be included here
-    const excludeFields = ['sort', 'fields', 'page', 'limit'];
-    excludeFields.forEach(el => {
-      delete queryObj[el];
-    });
-    // 2. Advanced filtering
-    let queryStr = JSON.stringify(queryObj);
-    queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, match => `$${match}`);
-
-    this.query = this.query.find(JSON.parse(queryStr));
-    return this;
-  }
-
-  sort() {
-    if (this.queryString.sort) {
-      const sortBy = this.queryString.sort.split(',').join(' ');
-      this.query = this.query.sort(sortBy);
-    } else {
-      this.query = this.query.sort('NCR');
-    }
-    return this;
-  }
-
-  limitFields() {
-    if (this.queryString.fields) {
-      const fields = this.queryString.fields.split(',').join(' ');
-      this.query = this.query.select(fields);
-    } else {
-      this.query = this.query.select('-__v');
-    }
-    return this;
-  }
-
-  paginate() {
-    if (this.queryString.page && this.queryString.limit) {
-      const page = this.queryString.page * 1 || 1;
-      const limit = this.queryString.limit * 1 || 100;
-      const skip = page - 1 + limit;
-      this.query = this.query.skip(skip).limit(limit);
-    }
-    return this;
-  }
-}
-
 exports.getAllComplaints = async (req, res) => {
   try {
     const features = new APIFeatures(Complaint.find(), req.query)
@@ -150,8 +96,86 @@ exports.deleteComplaint = async (req, res) => {
     });
   }
 };
-// I want to add aliasing to my rest api (mongoose). I would like to add this filter to it
-// exports.aliasOpenComplaint = async (req, res, next) => {
-//   req.query.sort = 'NCR';
-//   nrxt();
-// };
+exports.getComplaintStats = async (req, res) => {
+  try {
+    const stats = await Complaint.aggregate([
+      {
+        $match: {
+          complaintValue: { $gte: 5 }
+        }
+      },
+      {
+        $group: {
+          _id: { $toUpper: '$gasketType' },
+          numComplaints: { $sum: 1 },
+          totalComplaintValue: { $sum: '$complaintValue' },
+          avgComplaintValue: { $avg: '$complaintValue' },
+          maxComplaintValue: { $max: '$complaintValue' }
+        }
+      },
+      {
+        $sort: {
+          avgComplaintValue: 1
+        }
+      }
+    ]);
+    res.status(200).json({
+      status: 'success',
+      data: {
+        stats
+      }
+    });
+  } catch (err) {
+    res.status(400).json({
+      status: 'failed'
+    });
+  }
+};
+exports.getMonthlyStats = async (req, res) => {
+  const year = req.params.year * 1;
+  const stats = await Complaint.aggregate([
+    {
+      $match: {
+        dateOpened: {
+          $gte: new Date(`${year}-01-01T00:00:00.000Z`),
+          $lte: new Date(`${year}-12-31T23:59:59.999Z`)
+        }
+      }
+    },
+    {
+      $group: {
+        _id: { $month: '$dateOpened' },
+        sumComplaints: { $sum: 1 },
+        // Pushes all the items into an array.
+        tours: { $push: '$Customer' }
+      }
+    },
+    {
+      $addFields: { month: '$_id' }
+    },
+    // {
+    //   $limit: 2
+    // },
+    {
+      // '0' hides fields, '1' shows them.
+      $project: {
+        _id: 0
+      }
+    },
+    {
+      $sort: { _id: 1 }
+    }
+  ]);
+  res.status(200).json({
+    status: 'success',
+    data: {
+      stats
+    }
+  });
+  try {
+  } catch (err) {
+    res.status(400).json({
+      status: 'failed'
+    });
+  }
+};

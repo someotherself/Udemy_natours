@@ -5,6 +5,8 @@ const complaintController = require('./../controllers/complaintController.js');
 const router = express.Router();
 
 router.route('/openComplaints').get(complaintController.aliasOpenComplaint, complaintController.getAllComplaints);
+router.route('/complaintStats').get(complaintController.getComplaintStats);
+router.route('/monthlyStats/:year').get(complaintController.getMonthlyStats);
 router
   .route('/')
   .get(complaintController.getAllComplaints)
