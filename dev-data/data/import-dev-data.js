@@ -14,9 +14,7 @@ dotenv.config({ path: './config.env' });
 })();
 
 // READ JSON FILE
-const complaints = JSON.parse(
-  fs.readFileSync(`${__dirname}/complaints.json`, 'utf-8')
-);
+const complaints = JSON.parse(fs.readFileSync(`${__dirname}/complaints.json`, 'utf-8'));
 
 // IMPORT DATA INTO DB
 const importData = async () => {

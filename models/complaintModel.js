@@ -1,27 +1,5 @@
 const mongoose = require('mongoose');
 
-// const complaintSchema = new mongoose.Schema(
-//   {
-//     NCR: {
-//       type: Number,
-//       required: [true, 'NCR number is required'],
-//       unique: true,
-//       immutable: true
-//     },
-//     Customer: {
-//       type: String,
-//       required: [true, 'An NCR must be associated to a customer.']
-//     },
-//     orderNo: {
-//       type: Number,
-//       required: false
-//     },
-//     complaintValue: { type: Number, default: null },
-//     Description: { type: String, default: null }
-//   },
-//   { collection: 'Complaints_test' }
-// );
-
 const complaintSchema = new mongoose.Schema(
   {
     NCR: {
@@ -31,7 +9,7 @@ const complaintSchema = new mongoose.Schema(
     },
     Customer: { type: String, required: true },
     orderNo: { type: Number, required: false },
-    replacementOrder: { type: Number, default: null },
+    replacementOrder: { type: String, default: null },
     invoiceNo: { type: Number, default: null },
     complaintValue: { type: Number, default: null },
     creditValue: { type: Number, default: null },
@@ -39,10 +17,10 @@ const complaintSchema = new mongoose.Schema(
     raisedBy: { type: String, required: true },
     dateOpened: { type: Date, required: true },
     dateClosed: { type: Date, default: null },
-    gasketType: { type: String, required: true },
-    originCode: { type: String, required: true },
-    rootCauseCode: { type: String, required: true },
-    supplier: { type: String, required: true },
+    gasketType: { type: String, required: false },
+    originCode: { type: String, required: false },
+    rootCauseCode: { type: String, required: false },
+    supplier: { type: String, required: false },
     accept: { type: Boolean, default: true }
   },
   { collection: 'Test1' }
