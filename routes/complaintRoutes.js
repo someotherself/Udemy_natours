@@ -14,7 +14,7 @@ router
 router
   .route('/:id')
   .get(complaintController.getComplaint)
-  .patch(complaintController.updateComplaint);
-// .delete(complaintController.deleteComplaint);
+  .patch(complaintController.updateComplaint)
+  .delete(complaintController.deleteComplaint);
 
 module.exports = router;

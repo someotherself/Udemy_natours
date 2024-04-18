@@ -57,6 +57,7 @@ exports.createComplaint = async (req, res) => {
     });
   } catch (err) {
     if ((err.code = 11000)) {
+      console.log(err);
       return res.status(400).json({ status: 'failed', message: 'The NCR number already exists.' });
     }
     res.status(500).json({
@@ -69,6 +70,7 @@ exports.updateComplaint = async (req, res) => {
   try {
     const updatedComplaint = await Complaint.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
+      // Very important setting
       runValidators: true
     });
     res.status(200).json({
