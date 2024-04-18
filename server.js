@@ -8,7 +8,8 @@ const app = require('./app');
 // MongoDB / Mongoose
 (async () => {
   try {
-    await mongoose.connect(process.env.DATABASE_LOCAL);
+    // await mongoose.connect(process.env.DATABASE_LOCAL);
+    await mongoose.connect(process.env.DATABASE);
     console.log('DB connection successful');
   } catch (err) {
     console.log(err);

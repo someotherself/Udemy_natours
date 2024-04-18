@@ -5,7 +5,8 @@
   "main": "server.js",
   "scripts": {
     "start:dev": "SET NODE_ENV=development&&nodemon server.js",
-    "start:prod": "SET NODE_ENV=production&&nodemon server.js"
+    "start:prod": "SET NODE_ENV=production&&nodemon server.js",
+    "debug": "ndb server.js"
   },
   "author": "CRoman",
   "license": "ISC",
@@ -18,6 +19,7 @@
     "slugify": "^1.6.6"
   },
   "devDependencies": {
+    "@types/node": "^20.12.7",
     "eslint": "^5.16.0",
     "eslint-config-airbnb": "^17.1.0",
     "eslint-config-prettier": "^4.1.0",

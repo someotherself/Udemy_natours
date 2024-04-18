@@ -26,15 +26,15 @@ const complaintSchema = new mongoose.Schema(
     dateClosed: {
       type: Date,
       default: null
-      // validate: function(val) {
-      //   if (val === null) return true;
-      //   console.log(this.tree);
-      //   // console.log(new Date(dateOpened));
-      //   console.log(new Date(val));
-      //   // Needs to return true or false only.
-      //   return new Date(val) > new Date(this.get('dateOpened'));
-      // },
-      // message: 'Closing date must be after opening date'
+      // Example only. This kind of validation only works for new data (not updates).
+      // validate: {
+      //   validator: function(val) {
+      //     if (val === null) return true;
+      //     // Needs to return true or false only.
+      //     return new Date(val) > new Date(this.get('dateOpened'));
+      //   },
+      //   message: 'Closing date must be after the opening date.'
+      // }
     },
     gasketType: { type: String, required: false },
     originCode: { type: String, required: false },
@@ -73,7 +73,7 @@ complaintSchema.pre('save', function(next) {
 
 // Query middleware
 // A regex can be used to filter for more hooks (find, findOne etc)
-// 'this' is now a query object
+// 'this' is now an query object
 // Hides the records which are drafts
 // Looks for not equal to true, in case records are missing the field
 complaintSchema.pre(/^find/, function(next) {
