@@ -1,139 +1,103 @@
 const Complaint = require('./../models/complaintModel');
 const APIFeatures = require('./../utils/apiFeatures');
+const catchAsync = require('./../utils/catchAsync');
+const appError = require('./../utils/appError');
 // Route handlers
-
 exports.aliasOpenComplaint = async (req, res, next) => {
   req.query.sort = '-complaintValue';
   req.query.dateClosed = { $eq: null };
   next();
 };
-exports.getAllComplaints = async (req, res) => {
-  try {
-    const features = new APIFeatures(Complaint.find(), req.query)
-      .filter()
-      .sort()
-      .limitFields()
-      .paginate();
-    const allComplaints = await features.query;
-
-    res.status(200).json({
-      status: 'success',
-      results: allComplaints.length,
-      data: {
-        allComplaints
-      }
-    });
-  } catch (err) {
-    console.log(err);
-    res.status(404).json({
-      status: 'Fail',
-      message: 'Error'
-    });
-  }
-};
-exports.getComplaint = async (req, res) => {
-  try {
-    const singleComplaint = await Complaint.findById(req.params.id);
-    res.status(200).json({
-      status: 'Success',
-      data: { singleComplaint }
-    });
-  } catch (err) {
-    console.log(err);
-    res.status(404).json({
-      status: 'Fail',
-      message: 'Error'
-    });
-  }
-};
-exports.createComplaint = async (req, res) => {
-  try {
-    const newComplaint = await Complaint.create(req.body);
-    res.status(201).json({
-      status: 'success',
-      data: {
-        complaint: newComplaint
-      }
-    });
-  } catch (err) {
-    if ((err.code = 11000)) {
-      console.log(err);
-      return res.status(400).json({ status: 'failed', message: 'The NCR number already exists.' });
+exports.getAllComplaints = catchAsync(async (req, res, next) => {
+  const features = new APIFeatures(Complaint.find(), req.query)
+    .filter()
+    .sort()
+    .limitFields()
+    .paginate();
+  const allComplaints = await features.query;
+  res.status(200).json({
+    status: 'success',
+    results: allComplaints.length,
+    data: {
+      allComplaints
     }
-    res.status(500).json({
-      status: 'fail',
-      message: 'Invalid data sent!'
-    });
+  });
+});
+exports.getComplaint = catchAsync(async (req, res, next) => {
+  const complaint = await Complaint.findById(req.params.id);
+  if (!complaint) {
+    return next(new appError('No tour found with that ID', 404));
   }
-};
-exports.updateComplaint = async (req, res) => {
-  try {
-    const updatedComplaint = await Complaint.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      // Very important setting
-      runValidators: true
-    });
-    res.status(200).json({
-      status: 'success',
-      data: {
-        complaint: updatedComplaint
-      }
-    });
-  } catch (err) {
-    res.status(400).json({
-      status: 'failed'
-    });
+  res.status(200).json({
+    status: 'Success',
+    data: { complaint }
+  });
+});
+exports.createComplaint = catchAsync(async (req, res, next) => {
+  const newComplaint = await Complaint.create(req.body);
+  res.status(201).json({
+    status: 'success',
+    data: {
+      complaint: newComplaint
+    }
+  });
+});
+exports.updateComplaint = catchAsync(async (req, res, next) => {
+  const complaint = await Complaint.findByIdAndUpdate(req.params.id, req.body, {
+    new: true,
+    // Very important setting
+    runValidators: true
+  });
+  if (!complaint) {
+    return next(new appError('No tour found with that ID', 404));
   }
-};
-exports.deleteComplaint = async (req, res) => {
-  await Complaint.findByIdAndDelete(req.params.id);
+  res.status(200).json({
+    status: 'success',
+    data: {
+      complaint: complaint
+    }
+  });
+});
+exports.deleteComplaint = catchAsync(async (req, res, next) => {
+  const complaint = await Complaint.findByIdAndDelete(req.params.id);
+  if (!complaint) {
+    return next(new appError('No tour found with that ID', 404));
+  }
   res.status(204).json({
     status: 'success',
     data: null
   });
-  try {
-  } catch (err) {
-    res.status(400).json({
-      status: 'failed'
-    });
-  }
-};
-exports.getComplaintStats = async (req, res) => {
-  try {
-    const stats = await Complaint.aggregate([
-      {
-        $match: {
-          complaintValue: { $gte: 5 }
-        }
-      },
-      {
-        $group: {
-          _id: { $toUpper: '$gasketType' },
-          numComplaints: { $sum: 1 },
-          totalComplaintValue: { $sum: '$complaintValue' },
-          avgComplaintValue: { $avg: '$complaintValue' },
-          maxComplaintValue: { $max: '$complaintValue' }
-        }
-      },
-      {
-        $sort: {
-          avgComplaintValue: 1
-        }
+});
+exports.getComplaintStats = catchAsync(async (req, res, next) => {
+  const stats = await Complaint.aggregate([
+    {
+      $match: {
+        complaintValue: { $gte: 5 }
       }
-    ]);
-    res.status(200).json({
-      status: 'success',
-      data: {
-        stats
+    },
+    {
+      $group: {
+        _id: { $toUpper: '$gasketType' },
+        numComplaints: { $sum: 1 },
+        totalComplaintValue: { $sum: '$complaintValue' },
+        avgComplaintValue: { $avg: '$complaintValue' },
+        maxComplaintValue: { $max: '$complaintValue' }
       }
-    });
-  } catch (err) {
-    res.status(400).json({
-      status: 'failed'
-    });
-  }
-};
-exports.getMonthlyStats = async (req, res) => {
+    },
+    {
+      $sort: {
+        avgComplaintValue: 1
+      }
+    }
+  ]);
+  res.status(200).json({
+    status: 'success',
+    data: {
+      stats
+    }
+  });
+});
+exports.getMonthlyStats = catchAsync(async (req, res, next) => {
   const year = req.params.year * 1;
   const stats = await Complaint.aggregate([
     {
@@ -174,10 +138,4 @@ exports.getMonthlyStats = async (req, res) => {
       stats
     }
   });
-  try {
-  } catch (err) {
-    res.status(400).json({
-      status: 'failed'
-    });
-  }
-};
+});

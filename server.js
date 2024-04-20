@@ -5,6 +5,14 @@ const dotenv = require('dotenv');
 dotenv.config({ path: './config.env' });
 const app = require('./app');
 
+process.on('uncaughtException', err => {
+  console.log(err.name, err.message);
+
+  console.error('Uncaught Exception!');
+  server.close(() => {
+    process.exit(1);
+  });
+});
 // MongoDB / Mongoose
 (async () => {
   try {
@@ -12,13 +20,16 @@ const app = require('./app');
     await mongoose.connect(process.env.DATABASE);
     console.log('DB connection successful');
   } catch (err) {
-    console.log(err);
+    console.error(err.message);
+    server.close(() => {
+      process.exit(1);
+    });
   }
 })();
 
 // Server start
 const port = process.env.PORT || 3000;
 
-app.listen(port, () => {
+const server = app.listen(port, () => {
   console.log(`App running on port ${port} in ${app.get('env')} environment`);
 });

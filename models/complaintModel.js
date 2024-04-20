@@ -11,14 +11,14 @@ const complaintSchema = new mongoose.Schema(
       max: [1000, 'NCR number is too high']
     },
     slug: String,
-    Customer: { type: String, required: true },
+    Customer: { type: String, required: [true, 'A record must have a customer name'] },
     orderNo: { type: Array, required: false },
     replacementOrder: { type: String, default: null },
     invoiceNo: { type: Array, default: null },
     complaintValue: { type: Number, default: null },
     creditValue: { type: Number, default: null },
     Description: { type: String, default: null },
-    raisedBy: { type: String, required: true, maxlength: [20, 'Too many characters. Please enter a valid name'] },
+    raisedBy: { type: String, required: true, maxlength: [2, 'Too many characters. Please enter a valid name'] },
     dateOpened: {
       type: Date,
       required: true
@@ -61,13 +61,11 @@ complaintSchema.virtual('daysOpen').get(function() {
 // This is also called a pre-save hook
 // Multiple pre or post document middleware can be used
 complaintSchema.pre('save', function(next) {
-  console.log('dateOpened on pre-save:', this.dateOpened);
   this.slug = slugify(this.NCR.toString(), { lowercase: true });
   next();
 });
 
 // complaintSchema.post('save', function(doc, next) {
-//   console.log(this);
 //   next();
 // });
 
@@ -81,11 +79,6 @@ complaintSchema.pre(/^find/, function(next) {
   this.start = Date.now();
   next();
 });
-
-// complaintSchema.post(/^find/, function(docs, next) {
-//   console.log(`Query took: ${Date.now() - this.start} miliseconds`);
-//   next();
-// });
 
 // Aggregation middleware
 complaintSchema.pre('aggregate', function(next) {
