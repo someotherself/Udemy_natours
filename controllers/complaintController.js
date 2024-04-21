@@ -1,7 +1,8 @@
 const Complaint = require('./../models/complaintModel');
 const APIFeatures = require('./../utils/apiFeatures');
 const catchAsync = require('./../utils/catchAsync');
-const appError = require('./../utils/appError');
+const AppError = require('./../utils/AppError');
+
 // Route handlers
 exports.aliasOpenComplaint = async (req, res, next) => {
   req.query.sort = '-complaintValue';
@@ -26,7 +27,7 @@ exports.getAllComplaints = catchAsync(async (req, res, next) => {
 exports.getComplaint = catchAsync(async (req, res, next) => {
   const complaint = await Complaint.findById(req.params.id);
   if (!complaint) {
-    return next(new appError('No tour found with that ID', 404));
+    return next(new AppError('No tour found with that ID', 404));
   }
   res.status(200).json({
     status: 'Success',
@@ -49,7 +50,7 @@ exports.updateComplaint = catchAsync(async (req, res, next) => {
     runValidators: true
   });
   if (!complaint) {
-    return next(new appError('No tour found with that ID', 404));
+    return next(new AppError('No tour found with that ID', 404));
   }
   res.status(200).json({
     status: 'success',
@@ -61,7 +62,7 @@ exports.updateComplaint = catchAsync(async (req, res, next) => {
 exports.deleteComplaint = catchAsync(async (req, res, next) => {
   const complaint = await Complaint.findByIdAndDelete(req.params.id);
   if (!complaint) {
-    return next(new appError('No tour found with that ID', 404));
+    return next(new AppError('No tour found with that ID', 404));
   }
   res.status(204).json({
     status: 'success',

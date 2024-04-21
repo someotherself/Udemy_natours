@@ -1,9 +1,10 @@
 const morgan = require('morgan');
 const express = require('express');
-const appError = require('./utils/appError');
+const AppError = require('./utils/AppError');
 const globalErrorHandler = require('./controllers/errorController');
 
 const complaintRouter = require('./routes/complaintRoutes');
+const userRouter = require('./routes/userRoutes');
 
 const app = express();
 
@@ -21,12 +22,13 @@ app.use((req, res, next) => {
 
 // Sub-app specific middleware
 app.use('/api/v1/complaints/', complaintRouter);
+app.use('/api/v1/users/', userRouter);
 
 app.all('*', (req, res, next) => {
   // const err = new Error(`Canot find ${req.originalUrl} on this server`);
   // err.status = 'fail';
   // err.statusCode = 404;
-  next(new appError(`Canot find ${req.originalUrl} on this server`, 404));
+  next(new AppError(`Canot find ${req.originalUrl} on this server`, 404));
 });
 
 app.use(globalErrorHandler);
