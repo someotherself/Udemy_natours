@@ -25,9 +25,6 @@ app.use('/api/v1/complaints/', complaintRouter);
 app.use('/api/v1/users/', userRouter);
 
 app.all('*', (req, res, next) => {
-  // const err = new Error(`Canot find ${req.originalUrl} on this server`);
-  // err.status = 'fail';
-  // err.statusCode = 404;
   next(new AppError(`Canot find ${req.originalUrl} on this server`, 404));
 });
 
