@@ -34,7 +34,12 @@ const userSchema = new mongoose.Schema(
     },
     passwordChangedAt: { type: Date, require: false },
     passwordResetToken: String,
-    passwordResetExpires: Date
+    passwordResetExpires: Date,
+    active: {
+      type: Boolean,
+      default: true.valueOf,
+      select: false
+    }
   },
   { collection: 'TestUsers', toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
@@ -43,6 +48,13 @@ userSchema.pre('save', async function(next) {
   if (!this.isModified('password')) return next();
   this.password = await bcrypt.hash(this.password, 12);
   this.passwordConfirm = undefined;
+  next();
+});
+
+userSchema.pre('save', function(next) {
+  if (!this.isModified('password') || this.isNew) return next();
+  // This accounts for the extra time it takes to generate the jws token (aprox)
+  this.passwordChangedAt = Date.now() - 1000;
   next();
 });
 
@@ -66,10 +78,15 @@ userSchema.methods.createPasswordResetToken = function() {
     .update(resetToken)
     .digest('hex');
   console.log({ resetToken }, this.passwordResetToken);
-  this.passwordResetExpires = Date.now() + 5 * 60 * 1000;
+  this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
   return resetToken;
 };
 
 const User = mongoose.model('User', userSchema);
 
 module.exports = User;
+
+userSchema.pre(/^find/, function(next) {
+  this.find({ active: { $ne: false } });
+  next();
+});
