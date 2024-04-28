@@ -6,6 +6,9 @@ const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 const complaintRouter = require('./routes/complaintRoutes');
 const userRouter = require('./routes/userRoutes');
+const mongoSanitize = require('express-mongo-sanitize');
+const xss = require('xss-clean');
+const hpp = require('hpp');
 
 const app = express();
 
@@ -21,8 +24,23 @@ const limiter = rateLimit({
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
+
+// Body parser
 app.use(express.json({ limit: '10kb' }));
 // app.use(express.static(`${__dirname}/public`)); // Used for serving static files
+
+// Data sanitization against NoAQL query injection
+app.use(mongoSanitize());
+
+// Data sanitization against XSS
+app.use(xss());
+
+// Prevent parameter polution
+app.use(
+  hpp({
+    whitelist: ['creditValue', 'gasketType', 'Customer']
+  })
+);
 
 // Sub-app specific middleware
 app.use('/api', limiter);
