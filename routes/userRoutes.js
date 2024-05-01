@@ -1,5 +1,5 @@
 const express = require('express');
-const userController = require('./../controllers/userController.js');
+const userController = require('./../controllers/userController');
 const authenticationController = require('./../controllers/authenticationController.js');
 
 // Routes. Mounting the router
