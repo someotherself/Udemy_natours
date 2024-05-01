@@ -1,54 +1,67 @@
-const morgan = require('morgan');
 const express = require('express');
-const AppError = require('./utils/AppError');
-const globalErrorHandler = require('./controllers/errorController');
+const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
-const complaintRouter = require('./routes/complaintRoutes');
-const userRouter = require('./routes/userRoutes');
 const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
 const hpp = require('hpp');
 
+const AppError = require('./utils/appError');
+const globalErrorHandler = require('./controllers/errorController');
+const tourRouter = require('./routes/tourRoutes');
+const userRouter = require('./routes/userRoutes');
+
 const app = express();
 
-app.use(helmet()); // Security headers
+// 1) GLOBAL MIDDLEWARES
+// Set security HTTP headers
+app.use(helmet());
 
-const limiter = rateLimit({
-  max: 100,
-  windowMs: 60 * 60 * 1000, // 100 req from an IP per hour
-  message: 'Too many requests from this IP, please try again in an hour.'
-});
-
-// Global Middleware
+// Development logging
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
 
-// Body parser
-app.use(express.json({ limit: '10kb' }));
-// app.use(express.static(`${__dirname}/public`)); // Used for serving static files
+// Limit requests from same API
+const limiter = rateLimit({
+  max: 100,
+  windowMs: 60 * 60 * 1000,
+  message: 'Too many requests from this IP, please try again in an hour!'
+});
+app.use('/api', limiter);
 
-// Data sanitization against NoAQL query injection
+// Body parser, reading data from body into req.body
+app.use(express.json({ limit: '10kb' }));
+
+// Data sanitization against NoSQL query injection
 app.use(mongoSanitize());
 
 // Data sanitization against XSS
 app.use(xss());
 
-// Prevent parameter polution
+// Prevent parameter pollution
 app.use(
   hpp({
-    whitelist: ['creditValue', 'gasketType', 'Customer']
+    whitelist: ['duration', 'ratingsQuantity', 'ratingsAverage', 'maxGroupSize', 'difficulty', 'price']
   })
 );
 
-// Sub-app specific middleware
-app.use('/api', limiter);
-app.use('/api/v1/complaints/', complaintRouter);
-app.use('/api/v1/users/', userRouter);
+// Serving static files
+app.use(express.static(`${__dirname}/public`));
+
+// Test middleware
+app.use((req, res, next) => {
+  req.requestTime = new Date().toISOString();
+  // console.log(req.headers);
+  next();
+});
+
+// 3) ROUTES
+app.use('/api/v1/tours', tourRouter);
+app.use('/api/v1/users', userRouter);
 
 app.all('*', (req, res, next) => {
-  next(new AppError(`Canot find ${req.originalUrl} on this server`, 404));
+  next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
 });
 
 app.use(globalErrorHandler);
