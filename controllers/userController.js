@@ -1,6 +1,7 @@
 const AppError = require('../utils/AppError');
 const catchAsync = require('../utils/catchAsync');
 const User = require('./../models/userModel');
+const factory = require('./handlerFactory');
 
 const filterObj = (obj, ...allowedFields) => {
   const newObject = {};
@@ -12,26 +13,20 @@ const filterObj = (obj, ...allowedFields) => {
   return newObject;
 };
 
-exports.getAllUsers = catchAsync(async (req, res, next) => {
-  const allUsers = await User.find();
-  res.status(200).json({
-    status: 'success',
-    results: allUsers.length,
-    data: {
-      allUsers
-    }
-  });
-});
-
 exports.updateMe = catchAsync(async (req, res, next) => {
   // 1) Create error if user tries to update password
   if (req.body.password || req.body.passwordConfirm) {
-    return next(new AppError('Please use passwordUpdate route for updating password', 400));
+    return next(
+      new AppError('Please use passwordUpdate route for updating password', 400)
+    );
   }
 
   // 2) Update user and only the fields allowed
   const filteredBody = filterObj(req.body, 'name', 'email');
-  const updatedUser = await User.findByIdAndUpdate(req.user.id, filteredBody, { new: true, runValidators: true });
+  const updatedUser = await User.findByIdAndUpdate(req.user.id, filteredBody, {
+    new: true,
+    runValidators: true
+  });
 
   res.status(200).json({
     status: 'success',
@@ -39,9 +34,8 @@ exports.updateMe = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.deleteMe = catchAsync(async (req, res, next) => {
-  await User.findByIdAndUpdate(req.user.id, { active: false });
-  res.status(204).json({
-    status: 'success'
-  });
-});
+exports.getAllUsers = factory.getAll(User);
+exports.getUser = factory.getOne(User);
+exports.createUser = factory.createOne(User);
+exports.updateOne = factory.updateOne(User);
+exports.deleteUser = factory.deleteOne(User);
