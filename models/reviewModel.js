@@ -85,7 +85,6 @@ reviewSchema.pre(/^findOneAnd/, async function(next) {
 });
 
 reviewSchema.post(/^findOneAnd/, async function() {
-  console.log(this.model.constructor);
   if (this._original) {
     await this._original.constructor.calcAverageRatings(this._original.tour);
   }

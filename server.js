@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 // const Review = require('./models/reviewModel');
+const Tour = require('./models/tourModel');
 
 const dotenv = require('dotenv');
 
@@ -22,6 +23,7 @@ process.on('uncaughtException', err => {
     console.log('DB connection successful');
     // Waits for the indexes to build
     // await Review.init();
+    // await Tour.init();
   } catch (err) {
     console.error(err.message);
     server.close(() => {
