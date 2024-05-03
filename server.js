@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+// const Review = require('./models/reviewModel');
 
 const dotenv = require('dotenv');
 
@@ -19,6 +20,8 @@ process.on('uncaughtException', err => {
     // await mongoose.connect(process.env.DATABASE_LOCAL);
     await mongoose.connect(process.env.DATABASE);
     console.log('DB connection successful');
+    // Waits for the indexes to build
+    // await Review.init();
   } catch (err) {
     console.error(err.message);
     server.close(() => {

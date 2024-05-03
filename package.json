@@ -1,7 +1,7 @@
 {
   "name": "mongoosemonitor",
   "version": "1.0.0",
-  "description": "A rest API allowing the monitoring and storage of quality NCR",
+  "description": "A rest API for learning",
   "main": "server.js",
   "scripts": {
     "start:dev": "SET NODE_ENV=development&&nodemon server.js",

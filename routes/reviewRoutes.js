@@ -5,11 +5,12 @@ const authenticationController = require('./../controllers/authenticationControl
 // mergeParams gives the tourRouter access to the tourId param
 const router = express.Router({ mergeParams: true });
 
+router.use(authenticationController.protect);
+
 router
   .route('/')
   .get(reviewController.getAllReviews)
   .post(
-    authenticationController.protect,
     authenticationController.restrict('user'),
     reviewController.setTourUserIds,
     reviewController.createReview
@@ -19,13 +20,11 @@ router
   .route('/:id')
   .get(reviewController.getReview)
   .delete(
-    authenticationController.protect,
-    authenticationController.restrict('admin'),
+    authenticationController.restrict('user', 'admin'),
     reviewController.deleteReview
   )
   .patch(
-    authenticationController.protect,
-    authenticationController.restrict('admin'),
+    authenticationController.restrict('user', 'admin'),
     reviewController.updateReview
   );
 
