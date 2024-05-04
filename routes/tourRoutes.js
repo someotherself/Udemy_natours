@@ -12,18 +12,13 @@ const router = express.Router();
 //   .post(authenticationController.protect, authenticationController.restrict('user'), reviewController.createReview);
 
 router.use('/:tourId/reviews', reviewRouter);
-
 router.route('/top-5-cheap').get(tourController.aliasTopTours, tourController.getAllTours);
-
 router.use(authenticationController.protect);
-
 router.route('/tour-stats').get(tourController.getTourStats);
 router
   .route('/monthly-plan/:year')
   .get(authenticationController.restrict('admin', 'lead-guide', 'guide'), tourController.getMonthlyPlan);
-
 router.route('/tours-within/:distance/center/:latlng/:unit').get(tourController.getToursWithin);
-
 router.route('/distances/:latlng/:unit').get(tourController.getDistances);
 
 router

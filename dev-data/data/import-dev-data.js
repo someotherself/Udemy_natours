@@ -1,12 +1,14 @@
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const fs = require('fs');
-const Complaint = require('./../../models/complaintModel.js');
+const Tour = require('./../../models/tourModel.js');
+const User = require('./../../models/userModel.js');
+const Review = require('./../../models/reviewModel.js');
 dotenv.config({ path: './config.env' });
 
 (async () => {
   try {
-    await mongoose.connect(process.env.DATABASE_LOCAL);
+    await mongoose.connect(process.env.DATABASE);
     console.log('DB connection successful');
   } catch (err) {
     console.log(err);
@@ -14,12 +16,36 @@ dotenv.config({ path: './config.env' });
 })();
 
 // READ JSON FILE
-const complaints = JSON.parse(fs.readFileSync(`${__dirname}/complaints.json`, 'utf-8'));
+// const tours = JSON.parse(fs.readFileSync(`${__dirname}/tours.json`, 'utf-8'));
+// const users = JSON.parse(fs.readFileSync(`${__dirname}/users.json`, 'utf-8'));
+const reviews = JSON.parse(fs.readFileSync(`${__dirname}/reviews.json`, 'utf-8'));
 
-// IMPORT DATA INTO DB
+// IMPORT TOUR DATA INTO DB
+// const importData = async () => {
+//   try {
+//     await Tour.create(tours);
+//     console.log('Data succesfully loaded');
+//     process.exit();
+//   } catch (err) {
+//     console.log(err);
+//   }
+// };
+
+// IMPORT USER DATA INTO DB
+// const importData = async () => {
+//   try {
+//     await User.create(users, { validateBeforeSave: false });
+//     console.log('Data succesfully loaded');
+//     process.exit();
+//   } catch (err) {
+//     console.log(err);
+//   }
+// };
+
+// IMPORT REVIEW DATA INTO DB
 const importData = async () => {
   try {
-    await Complaint.create(complaints);
+    await User.create(reviews, { validateBeforeSave: false });
     console.log('Data succesfully loaded');
     process.exit();
   } catch (err) {
@@ -27,17 +53,27 @@ const importData = async () => {
   }
 };
 
-// DELETE ALL EXISTING DATA FROM DB
+// DELETE ALL TOURS FROM DB
+// const deleteData = async () => {
+//   try {
+//     await tour.deleteMany();
+//     console.log('Data succesfully deleted');
+//     process.exit();
+//   } catch (err) {
+//     console.log(err);
+//   }
+// };
 
-const deleteData = async () => {
-  try {
-    await Complaint.deleteMany();
-    console.log('Data succesfully deleted');
-    process.exit();
-  } catch (err) {
-    console.log(err);
-  }
-};
+// DELETE ALL USERS FROM DB
+// const deleteData = async () => {
+//   try {
+//     await User.deleteMany();
+//     console.log('Data succesfully deleted');
+//     process.exit();
+//   } catch (err) {
+//     console.log(err);
+//   }
+// };
 
 if (process.argv[2] === '--import') {
   importData();

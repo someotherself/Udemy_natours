@@ -70,6 +70,7 @@ exports.updateOne = Model =>
 exports.getOne = (Model, popOptions) =>
   catchAsync(async (req, res, next) => {
     let query = Model.findById(req.params.id);
+    // Populates the virtual fields
     if (popOptions) query = query.populate(popOptions);
     const doc = await query;
     if (!doc) {

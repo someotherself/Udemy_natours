@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const slugify = require('slugify');
+const User = require('./userModel');
 // const validator = require('validator');
 
 const tourSchema = new mongoose.Schema(
@@ -163,22 +164,24 @@ tourSchema.pre('save', function(next) {
 // });
 
 // QUERY MIDDLEWARE
-// tourSchema.pre('find', function(next) {
 tourSchema.pre(/^find/, function(next) {
   this.find({ secretTour: { $ne: true } });
   this.start = Date.now();
   next();
 });
 
+// populate is only recommened in small apps
 tourSchema.pre(/^find/, function(next) {
-  // populate is only recommened in small apps
-  this.populate({ path: 'guides', select: '-__v' });
+  this.populate({
+    path: 'guides',
+    match: { role: { $in: ['guide', 'lead-guide'] } },
+    select: '-__v -passwordChangedAt'
+  });
   next();
 });
 
-tourSchema.post(/^find/, function(docs, next) {
+tourSchema.post(/^find/, function() {
   console.log(`Query took ${Date.now() - this.start} milliseconds!`);
-  next();
 });
 
 // AGGREGATION MIDDLEWARE
