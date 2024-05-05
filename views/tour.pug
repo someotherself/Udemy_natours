@@ -1,6 +1,12 @@
 extends base
 include _reviewCard
 
+//- append adds at the end of the block
+//- prepend can add it to the beginning of the block
+//- This adds the from end JS file only on the tour page
+block append head
+    //- script(defer, src='/js/mapbox.js')
+
 mixin overviewBox(description, text, icon)
     .overview-box__detail
         svg.overview-box__icon
@@ -56,7 +62,8 @@ block content
             .picture-box
                 img.picture-box__img(src=`/img/tours/${img}`, alt=`${tour.name} ${index + 1}`, class=`picture-box__img--${index + 1}`)
     section.section-map
-        #map
+        //- JSON.stringify converts it into a string (so html can handle it)
+        #map(data-locations=`${JSON.stringify(tour.locations)}`)
     section.section-reviews 
         .reviews
             each review in tour.reviews

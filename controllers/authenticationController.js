@@ -5,6 +5,7 @@ const AppError = require('../utils/AppError');
 const { promisify } = require('util');
 const sendEmail = require('./../utils/email');
 const crypto = require('crypto');
+const Cookies = require('cookie');
 
 const signToken = id => {
   return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN });
@@ -67,6 +68,9 @@ exports.protect = catchAsync(async (req, res, next) => {
   // 1) Get if token exists
   if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
     token = req.headers.authorization.split(' ')[1];
+  } else if (req.headers.cookie) {
+    const cookies = Cookies.parse(req.headers.cookie);
+    token = cookies.jwt || null;
   }
 
   if (!token) {
@@ -74,7 +78,11 @@ exports.protect = catchAsync(async (req, res, next) => {
   }
   // 2) Validate token.
   // jwt.verify is an async function. Promisify turns it into a promise
-  const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
+  try {
+    const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
+  } catch (err) {
+    return next(new AppError('Authentication failed. Please log in again.', 401));
+  }
   // 3) Check if user still exists
   const currentUser = await User.findById(decoded.id);
   if (!currentUser) return next(new AppError('Authentication failed. User does not exist. Please log in again.', 401));
@@ -84,6 +92,27 @@ exports.protect = catchAsync(async (req, res, next) => {
   }
   // Give access to protected route.
   req.user = currentUser;
+  next();
+});
+
+// Only for rendered pages, no errors.
+exports.isLoggedIn = catchAsync(async (req, res, next) => {
+  if (req.headers.cookie) {
+    const cookies = Cookies.parse(req.headers.cookie);
+    const token = cookies.jwt || null;
+    const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
+    const currentUser = await User.findById(decoded.id);
+    if (!currentUser) {
+      return next();
+    }
+    if (await currentUser.changedPasswordAfter(decoded.iat)) {
+      return next();
+    }
+    // There is a logged in user
+    // the pug template will have access to the res.locals
+    res.locals.user = currentUser;
+    return next();
+  }
   next();
 });
 
